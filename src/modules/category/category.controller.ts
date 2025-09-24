@@ -2,13 +2,14 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, Upl
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-import { ApiConsumes, ApiQuery } from '@nestjs/swagger';
+import { ApiConsumes, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { UploadFileS3 } from 'src/common/interceptors/upload-file.interceptor';
 import { Pagination } from 'src/common/decorators/pagination.decorator';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { FormType } from 'src/common/enum/form-type.enum';
 
 @Controller('category')
+@ApiTags('Category')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) { }
 

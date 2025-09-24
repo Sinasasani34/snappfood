@@ -1,5 +1,5 @@
-import {IsEmail, IsMobilePhone, IsString, Length} from "class-validator";
-import {ConfirmedPassword} from "src/common/decorators/password.decorator";
+import { IsEmail, IsMobilePhone, IsString, Length } from "class-validator";
+import { ConfirmedPassword } from "src/common/decorators/password.decorator";
 
 export class SignupDto {
   @IsString()
@@ -9,25 +9,10 @@ export class SignupDto {
   @IsMobilePhone(
     "fa-IR",
     {},
-    {message: "your phonbe number format is incorrect"}
+    { message: "your phonbe number format is incorrect" }
   )
   mobile: string;
   @IsString()
-  @IsEmail({}, {message: "your email format is incorrect"})
+  @IsEmail({}, { message: "your email format is incorrect" })
   email: string;
-  @IsString()
-  @Length(6, 20, {message: "your password is incorrect"})
-  password: string;
-  @IsString()
-  @ConfirmedPassword("password")
-  confirm_password: string;
-}
-
-export class LoginDto {
-  @IsString()
-  @IsEmail({}, {message: "your email format is incorrect"})
-  email: string;
-  @IsString()
-  @Length(6, 20, {message: "your password is incorrect"})
-  password: string;
 }

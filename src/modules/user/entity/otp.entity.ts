@@ -1,5 +1,5 @@
-import {Column, Entity, OneToOne, PrimaryGeneratedColumn} from "typeorm";
-import {UserEntity} from "./user.entity";
+import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { UserEntity } from "./user.entity";
 
 @Entity("otp")
 export class OTPEntity {
@@ -11,6 +11,6 @@ export class OTPEntity {
   expires_in: Date;
   @Column()
   userId: number;
-  @OneToOne(() => UserEntity, (user) => user.otp, {onDelete: "CASCADE"})
+  @OneToOne(() => UserEntity, (user) => user.otp, { onDelete: "CASCADE" })
   user: UserEntity;
 }

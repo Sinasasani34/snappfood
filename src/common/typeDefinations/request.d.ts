@@ -1,9 +1,10 @@
-import {UserEntity} from "src/modules/user/entities/user.entity";
+import { SupplierEntity } from "src/modules/supplier/entities/supplier.entity";
+import { UserEntity } from "src/modules/user/entity/user.entity";
 
 declare global {
   namespace Express {
     interface Request {
-      user?: UserEntity;
+      user?: UserEntity | SupplierEntity;
     }
   }
 }

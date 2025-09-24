@@ -1,4 +1,5 @@
 import { EntityNames } from "src/common/enum/entity-name.enum";
+import { SupplierEntity } from "src/modules/supplier/entities/supplier.entity";
 import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity(EntityNames.Category)
@@ -29,4 +30,7 @@ export class CategoryEntity {
 
     @OneToMany(() => CategoryEntity, (category) => category.parent)
     children: CategoryEntity[]; // ارایه ای از کتگوری ها
+
+    @OneToMany(() => SupplierEntity, (supplier) => supplier.category)
+    suppliers: SupplierEntity[]; // ارایه ای از کتگوری ها
 }

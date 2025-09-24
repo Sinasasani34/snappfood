@@ -1,20 +1,13 @@
-import {
-  BadRequestException,
-  ConflictException,
-  Injectable,
-  UnauthorizedException,
-} from "@nestjs/common";
-import {InjectRepository} from "@nestjs/typeorm";
-import {UserEntity} from "../user/entities/user.entity";
-import {Repository} from "typeorm";
-import {OTPEntity} from "../user/entities/otp.entity";
-import {CheckOtpDto, SendOtpDto} from "./dto/otp.dto";
-import {randomInt} from "crypto";
-import {JwtService} from "@nestjs/jwt";
-import {ConfigService} from "@nestjs/config";
-import {TokensPayload} from "./types/payload";
-import {LoginDto, SignupDto} from "./dto/basic.dto";
-import {hashSync, genSaltSync, compareSync} from "bcrypt";
+import { BadRequestException, ConflictException, Injectable, UnauthorizedException, } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { UserEntity } from "../user/entity/user.entity";
+import { Repository } from "typeorm";
+import { OTPEntity } from "../user/entity/otp.entity";
+import { CheckOtpDto, SendOtpDto } from "./dto/otp.dto";
+import { randomInt } from "crypto";
+import { JwtService } from "@nestjs/jwt";
+import { ConfigService } from "@nestjs/config";
+import { TokensPayload } from "./types/payload";
 @Injectable()
 export class AuthService {
   constructor(
@@ -24,11 +17,11 @@ export class AuthService {
     @InjectRepository(OTPEntity) private otpRepository: Repository<OTPEntity>,
     private jwtService: JwtService,
     private configService: ConfigService
-  ) {}
+  ) { }
 
   async sendOtp(otpDto: SendOtpDto) {
-    const {mobile} = otpDto;
-    let user = await this.userRepository.findOneBy({mobile});
+    const { mobile } = otpDto;
+    let user = await this.userRepository.findOneBy({ mobile });
     if (!user) {
       user = this.userRepository.create({
         mobile,
@@ -40,11 +33,12 @@ export class AuthService {
       message: "sent code successfully",
     };
   }
+
   async checkOtp(otpDto: CheckOtpDto) {
-    const {code, mobile} = otpDto;
+    const { code, mobile } = otpDto;
     const now = new Date();
     const user = await this.userRepository.findOne({
-      where: {mobile},
+      where: { mobile },
       relations: {
         otp: true,
       },
@@ -58,15 +52,14 @@ export class AuthService {
       throw new UnauthorizedException("Otp Code is expired");
     if (!user.mobile_verify) {
       await this.userRepository.update(
-        {id: user.id},
+        { id: user.id },
         {
           mobile_verify: true,
         }
       );
     }
-    const {accessToken, refreshToken} = this.makeTokensForUser({
-      id: user.id,
-      mobile,
+    const { accessToken, refreshToken } = this.makeTokensForUser({
+      id: user.id
     });
     return {
       accessToken,
@@ -74,54 +67,21 @@ export class AuthService {
       message: "You logged-in successfully",
     };
   }
-  async signup(signupDto: SignupDto) {
-    const {first_name, last_name, email, password, mobile} = signupDto;
-    await this.checkEmail(email);
-    await this.checkMobile(mobile);
-    let hashedPassword = this.hashPasswors(password);
-    const user = this.userRepository.create({
-      first_name,
-      last_name,
-      mobile,
-      email,
-      password: hashedPassword,
-      mobile_verify: false,
-    });
-    await this.userRepository.save(user);
-    return {
-      message: "user signup successfully",
-    };
-  }
-  async login(loginDto: LoginDto) {
-    const {email, password} = loginDto;
-    const user = await this.userRepository.findOneBy({email});
-    if (!user)
-      throw new UnauthorizedException("username or password is incorrect");
-    if (!compareSync(password, user.password)) {
-      throw new UnauthorizedException("username or password is incorrect");
-    }
-    const {accessToken, refreshToken} = this.makeTokensForUser({
-      mobile: user.mobile,
-      id: user.id,
-    });
-    return {
-      accessToken,
-      refreshToken,
-      message: "you logged-in successfully",
-    };
-  }
+
   async checkEmail(email: string) {
-    const user = await this.userRepository.findOneBy({email});
+    const user = await this.userRepository.findOneBy({ email });
     if (user) throw new ConflictException("email is already exist");
   }
+
   async checkMobile(mobile: string) {
-    const user = await this.userRepository.findOneBy({mobile});
+    const user = await this.userRepository.findOneBy({ mobile });
     if (user) throw new ConflictException("mobile number is already exist");
   }
+
   async createOtpForUser(user: UserEntity) {
     const expiresIn = new Date(new Date().getTime() + 1000 * 60 * 2);
     const code = randomInt(10000, 99999).toString();
-    let otp = await this.otpRepository.findOneBy({userId: user.id});
+    let otp = await this.otpRepository.findOneBy({ userId: user.id });
     if (otp) {
       if (otp.expires_in > new Date()) {
         throw new BadRequestException("otp code not expired");
@@ -139,13 +99,14 @@ export class AuthService {
     user.otpId = otp.id;
     await this.userRepository.save(user);
   }
+
   makeTokensForUser(payload: TokensPayload) {
     const accessToken = this.jwtService.sign(payload, {
-      secret: this.configService.get("Jwt.accessTokenSecret"),
+      secret: process.env.ACCESS_TOKEN_SECRET,
       expiresIn: "30d",
     });
     const refreshToken = this.jwtService.sign(payload, {
-      secret: this.configService.get("Jwt.refreshTokenSecret"),
+      secret: process.env.REFRESH_TOKEN_SECRET,
       expiresIn: "1y",
     });
     return {
@@ -153,13 +114,14 @@ export class AuthService {
       refreshToken,
     };
   }
+
   async validateAccessToken(token: string) {
     try {
       const payload = this.jwtService.verify<TokensPayload>(token, {
-        secret: this.configService.get("Jwt.accessTokenSecret"),
+        secret: process.env.ACCESS_TOKEN_SECRET,
       });
       if (typeof payload === "object" && payload?.id) {
-        const user = await this.userRepository.findOneBy({id: payload.id});
+        const user = await this.userRepository.findOneBy({ id: payload.id });
         if (!user) {
           throw new UnauthorizedException("login on your account ");
         }
@@ -169,9 +131,5 @@ export class AuthService {
     } catch (error) {
       throw new UnauthorizedException("login on your account ");
     }
-  }
-  hashPasswors(password: string) {
-    const salt = genSaltSync(10);
-    return hashSync(password, salt);
   }
 }
