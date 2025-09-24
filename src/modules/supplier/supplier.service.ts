@@ -139,7 +139,12 @@ export class SupplierService {
         if (!supplier) {
           throw new UnauthorizedException("وارد حساب کاربری خود شوید");
         }
-        return supplier;
+        return {
+          id: supplier.id,
+          first_name: supplier.manager_name,
+          last_name: supplier.manager_family,
+          mobile: supplier.phone
+        };
       }
       throw new UnauthorizedException("وارد حساب کاربری خود شوید");
     } catch (error) {

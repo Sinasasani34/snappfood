@@ -13,5 +13,6 @@ import { JwtService } from '@nestjs/jwt';
   imports: [TypeOrmModule.forFeature([SupplierEntity, SupplierOTPEntity, CategoryEntity])],
   controllers: [SupplierController],
   providers: [SupplierService, s3Service, CategoryService, JwtService],
+  exports: [SupplierService, JwtService, s3Service, TypeOrmModule]
 })
 export class SupplierModule { }

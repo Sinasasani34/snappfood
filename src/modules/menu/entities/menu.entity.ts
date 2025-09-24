@@ -1,11 +1,5 @@
 import { EntityNames } from "src/common/enum/entity-name.enum";
-import {
-    Column,
-    Entity,
-    ManyToOne,
-    OneToMany,
-    PrimaryGeneratedColumn,
-} from "typeorm";
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { FeedbackEntity } from "./feedback.entity";
 import { SupplierEntity } from "src/modules/supplier/entities/supplier.entity";
 import { TypeEntity } from "./type.entity";

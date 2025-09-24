@@ -1,13 +1,7 @@
 
 import { EntityNames } from "src/common/enum/entity-name.enum";
 import { UserEntity } from "src/modules/user/entity/user.entity";
-import {
-    Column,
-    CreateDateColumn,
-    Entity,
-    ManyToOne,
-    PrimaryGeneratedColumn,
-} from "typeorm";
+import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, } from "typeorm";
 import { MenuEntity } from "./menu.entity";
 
 @Entity(EntityNames.Feedbacks)

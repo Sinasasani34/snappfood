@@ -1,19 +1,5 @@
 
-import {
-  Body,
-  Controller,
-  Delete,
-  FileTypeValidator,
-  Get,
-  MaxFileSizeValidator,
-  Param,
-  ParseFilePipe,
-  ParseIntPipe,
-  Post,
-  Put,
-  UploadedFile,
-  UseInterceptors,
-} from "@nestjs/common";
+import { Body, Controller, Delete, FileTypeValidator, Get, MaxFileSizeValidator, Param, ParseFilePipe, ParseIntPipe, Post, Put, UploadedFile, UseInterceptors, } from "@nestjs/common";
 import { MenuService } from "../service/menu.service";
 import { ApiConsumes, ApiTags } from "@nestjs/swagger";
 import { FoodDto, UpdateFoodDto } from "../dto/food.dto";

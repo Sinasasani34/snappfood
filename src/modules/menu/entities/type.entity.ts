@@ -1,12 +1,6 @@
 import { EntityNames } from "src/common/enum/entity-name.enum";
 import { SupplierEntity } from "src/modules/supplier/entities/supplier.entity";
-import {
-    Column,
-    Entity,
-    ManyToOne,
-    OneToMany,
-    PrimaryGeneratedColumn,
-} from "typeorm";
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { MenuEntity } from "./menu.entity";
 
 @Entity(EntityNames.MenuType)

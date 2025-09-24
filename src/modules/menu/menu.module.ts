@@ -5,10 +5,17 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { MenuEntity } from './entities/menu.entity';
 import { TypeEntity } from './entities/type.entity';
 import { FeedbackEntity } from './entities/feedback.entity';
+import { SupplierModule } from '../supplier/supplier.module';
+import { MenuTypeController } from './controllers/type.controller';
+import { MenuTypeService } from './service/type.service';
+import { s3Service } from '../s3/s3.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([MenuEntity, TypeEntity, FeedbackEntity])],
-  controllers: [MenuController],
-  providers: [MenuService],
+  imports: [
+    SupplierModule,
+    TypeOrmModule.forFeature([MenuEntity, TypeEntity, FeedbackEntity])
+  ],
+  controllers: [MenuController, MenuTypeController],
+  providers: [s3Service, MenuService, MenuTypeService, TypeOrmModule],
 })
 export class MenuModule { }

@@ -2,6 +2,7 @@ import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from
 import { SupplierService } from "../supplier.service";
 import { Request } from "express";
 import { isJWT } from "class-validator";
+import { RequestUser } from "src/modules/user/interface/request-user.interface";
 
 @Injectable()
 export class SupplierAuthGuard implements CanActivate {
@@ -10,7 +11,7 @@ export class SupplierAuthGuard implements CanActivate {
         const httpContext = context.switchToHttp();
         const request: Request = httpContext.getRequest<Request>();
         const token = this.extractToken(request);
-        request.user = await this.supplierService.validateAccessToken(token);
+        request.user = await this.supplierService.validateAccessToken(token) as any;
         return true;
     }
 
