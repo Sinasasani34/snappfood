@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable } from "@nestjs/common";
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { DscountEntity } from "./entities/discount.entity";
 import { DiscountDto } from "./dto/discount.dto";
@@ -43,5 +43,24 @@ export class DiscountService {
     async checkExistCode(code: string) {
         const discount = await this.discountRepository.findOneBy({ code });
         if (discount) throw new ConflictException('کد وجود دارد');
+    }
+
+    async findOneByCode(code: string) {
+        const discount = await this.discountRepository.findOneBy({ code });
+        if (!discount) throw new NotFoundException("کد تخفیف یافته نشد");
+        return discount
+    }
+
+    async findAll() {
+        return await this.discountRepository.find({});
+    }
+
+    async delete(id: number) {
+        const discount = await this.discountRepository.findOneBy({ id });
+        if (!discount) throw new NotFoundException('کدی یافته نشد');
+        await this.discountRepository.delete({ id });
+        return {
+            message: "کد با موفقیت حذف گردید"
+        };
     }
 }

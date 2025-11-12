@@ -8,6 +8,7 @@ import { AuthModule } from '../auth/auth.module';
 import { UserModule } from '../user/user.module';
 import { SupplierModule } from '../supplier/supplier.module';
 import { MenuModule } from '../menu/menu.module';
+import { DiscountModule } from '../discount/discount.module';
 
 @Module({
   imports: [
@@ -16,7 +17,8 @@ import { MenuModule } from '../menu/menu.module';
     UserModule,
     CategoryModule,
     SupplierModule,
-    MenuModule
+    MenuModule,
+    DiscountModule
   ],
   controllers: [AppController],
   providers: [AppService],
