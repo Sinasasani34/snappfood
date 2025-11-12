@@ -6,6 +6,7 @@ import { FoodDto, UpdateFoodDto } from "../dto/food.dto";
 import { FormType } from "src/common/enum/form-type.enum";
 import { UploadFileS3 } from "src/common/interceptors/upload-file.interceptor";
 import { SupplierAuth } from "src/common/decorators/auth.decorator";
+import { SkipAuth } from "src/common/decorators/skip-auth.decorator";
 // import { SKipAuth } from "src/common/decorators/skip-auth.decorator";
 
 @Controller("menu")
@@ -32,7 +33,7 @@ export class MenuController {
     return this.menuService.create(foodDto, image);
   }
   @Get("/get-menu-by-id/:id")
-  // @SKipAuth()
+  @SkipAuth()
   findAll(@Param("id", ParseIntPipe) id: number) {
     return this.menuService.findAll(id);
   }

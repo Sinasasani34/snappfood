@@ -6,6 +6,7 @@ export class MenuTypeDto {
     @ApiProperty()
     @Length(3, 30)
     title: string;
+
     @ApiProperty()
     priority: number;
 }

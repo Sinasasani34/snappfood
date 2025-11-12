@@ -8,5 +8,7 @@ export enum EntityNames {
     Menu = "menu",
     MenuItem = "menu_item",
     Feedbacks = "feedback",
-    MenuType = "menu-type"
+    MenuType = "menu-type",
+    UserBasket = "user-basket",
+    Discount = "discount",
 }

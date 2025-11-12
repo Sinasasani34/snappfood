@@ -42,11 +42,10 @@ export class MenuService {
       message: "create",
     };
   }
-  async update(
-    id: number,
-    foodDto: UpdateFoodDto,
-    image: Express.Multer.File
-  ) { }
+  async update(id: number, foodDto: UpdateFoodDto, image: Express.Multer.File) {
+
+  }
+
   async findAll(supplierId: number) {
     return await this.menuTypeRepository.find({
       where: { supplierId },
