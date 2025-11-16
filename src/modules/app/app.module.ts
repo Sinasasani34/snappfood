@@ -9,6 +9,7 @@ import { UserModule } from '../user/user.module';
 import { SupplierModule } from '../supplier/supplier.module';
 import { MenuModule } from '../menu/menu.module';
 import { DiscountModule } from '../discount/discount.module';
+import { BasketModule } from '../basket/basket.module';
 
 @Module({
   imports: [
@@ -18,7 +19,8 @@ import { DiscountModule } from '../discount/discount.module';
     CategoryModule,
     SupplierModule,
     MenuModule,
-    DiscountModule
+    DiscountModule,
+    BasketModule
   ],
   controllers: [AppController],
   providers: [AppService],

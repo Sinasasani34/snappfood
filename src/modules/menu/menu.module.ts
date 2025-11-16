@@ -17,5 +17,6 @@ import { s3Service } from '../s3/s3.service';
   ],
   controllers: [MenuController, MenuTypeController],
   providers: [s3Service, MenuService, MenuTypeService, TypeOrmModule],
+  exports: [s3Service, MenuService, MenuTypeService, TypeOrmModule],
 })
 export class MenuModule { }
