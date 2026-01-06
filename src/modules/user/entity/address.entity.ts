@@ -9,6 +9,7 @@ import {
     PrimaryGeneratedColumn,
 } from "typeorm";
 import { UserEntity } from "./user.entity";
+import { OrderEntity } from "src/modules/order/entities/order.entity";
 
 @Entity(EntityNames.UserAddress)
 export class UserAddressEntity {
@@ -33,4 +34,6 @@ export class UserAddressEntity {
     })
     user: UserEntity;
 
+    @OneToMany(() => OrderEntity, order => order.address)
+    orders: OrderEntity[];
 }
