@@ -1,4 +1,10 @@
-import { BadRequestException, Inject, Injectable, NotFoundException, Scope } from "@nestjs/common";
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  Scope,
+} from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { UserBasketEntity } from "./entities/basket.entity";
 import { IsNull, Not, Repository } from "typeorm";
@@ -12,171 +18,171 @@ import { DscountEntity } from "../discount/entities/discount.entity";
 
 @Injectable({ scope: Scope.REQUEST })
 export class BasketService {
-    constructor(
-        @InjectRepository(UserBasketEntity)
-        private basketRepository: Repository<UserBasketEntity>,
-        @InjectRepository(DscountEntity)
-        private discountRepository: Repository<DscountEntity>,
-        private menuService: MenuService,
-        private discountService: DiscountService,
-        @Inject(REQUEST) private req: Request,
-    ) { }
+  constructor(
+    @InjectRepository(UserBasketEntity)
+    private basketRepository: Repository<UserBasketEntity>,
+    @InjectRepository(DscountEntity)
+    private discountRepository: Repository<DscountEntity>,
+    private menuService: MenuService,
+    private discountService: DiscountService,
+    @Inject(REQUEST) private req: Request
+  ) {}
 
-    async addToBasket(basketDto: BasketDto) {
-        const { id: userId } = this.req.user as RequestUser;
-        const { foodId } = basketDto;
-        const food = await this.menuService.getOne(foodId);
-        let basketItem = await this.basketRepository.findOne({
-            where: {
-                userId,
-                foodId
-            }
-        });
-        if (basketItem) {
-            basketItem.count += 1;
-        } else {
-            basketItem = this.basketRepository.create({
-                foodId,
-                userId,
-                count: 1
-            });
-        }
+  async addToBasket(basketDto: BasketDto) {
+    const { id: userId } = this.req.user as RequestUser;
+    const { foodId } = basketDto;
+    const food = await this.menuService.getOne(foodId);
+    let basketItem = await this.basketRepository.findOne({
+      where: {
+        userId,
+        foodId,
+      },
+    });
+    if (basketItem) {
+      basketItem.count += 1;
+    } else {
+      basketItem = this.basketRepository.create({
+        foodId,
+        userId,
+        count: 1,
+      });
+    }
+    await this.basketRepository.save(basketItem);
+    return {
+      message: "غذا به سبد خرید اضافه شد",
+    };
+  }
+  async removeFromBasket(basketDto: BasketDto) {
+    const { id: userId } = this.req.user as RequestUser;
+    const { foodId } = basketDto;
+    const food = await this.menuService.getOne(foodId);
+    let basketItem = await this.basketRepository.findOne({
+      where: {
+        userId,
+        foodId,
+      },
+    });
+    if (basketItem) {
+      if (basketItem.count <= 1) {
+        await this.basketRepository.delete({ id: basketItem.id });
+      } else {
+        basketItem.count -= 1;
         await this.basketRepository.save(basketItem);
-        return {
-            message: "غذا به سبد خرید اضافه شد"
-        }
+      }
+      return {
+        message: "با موفقیت از سبد خرید حذف شد",
+      };
     }
-    async removeFromBasket(basketDto: BasketDto) {
-        const { id: userId } = this.req.user as RequestUser;
-        const { foodId } = basketDto;
-        const food = await this.menuService.getOne(foodId);
-        let basketItem = await this.basketRepository.findOne({
-            where: {
-                userId,
-                foodId
+    throw new NotFoundException("غذایی در سبد خرید یافته نشده است");
+  }
+
+  async getBasket() {
+    const { id: userId } = this.req.user as RequestUser;
+    const basketItems = await this.basketRepository.find({
+      relations: {
+        discount: true,
+        food: {
+          supplier: true,
+        },
+      },
+      where: {
+        userId,
+      },
+    });
+
+    const foods = basketItems.filter((item) => item.foodId);
+    const supplierDiscount = basketItems.filter(
+      (item) => item?.discount?.supplierId
+    );
+    const generalDiscount = basketItems.find(
+      (item) => item?.discount?.id && !item.discount.supplierId
+    );
+    let total_amount = 0;
+    let payment_amount = 0;
+    let total_discount_amount = 0;
+    let foodList = [] as any[];
+    for (const item of foods) {
+      let discount_amount = 0;
+      let discountCode: string | null = null;
+      const { food, count } = item;
+      total_amount += food.price * count;
+      const supplierId = food.supplierId;
+      let foodPrice = food.price * count;
+      if (food.is_active && food.discount > 0) {
+        discount_amount += foodPrice * (food.discount / 100);
+        foodPrice = foodPrice - foodPrice * (food.discount / 100);
+      }
+      const discountItem = supplierDiscount.find(
+        ({ discount }) => discount.supplierId === supplierId
+      );
+      if (discountItem) {
+        const {
+          discount: { active, amount, percent, limit, usage, code },
+        } = discountItem;
+        if (active) {
+          if (!limit || (limit && limit > usage)) {
+            discountCode = code;
+            if (percent && percent > 0) {
+              discount_amount += foodPrice * (percent / 100);
+              foodPrice = foodPrice - foodPrice * (percent / 100);
             }
-        });
-        if (basketItem) {
-            if (basketItem.count <= 1) {
-                await this.basketRepository.delete({ id: basketItem.id });
-            } else {
-                basketItem.count -= 1;
-                await this.basketRepository.save(basketItem);
-            }
-            return {
-                message: "با موفقیت از سبد خرید حذف شد"
-            }
+          }
         }
-        throw new NotFoundException('غذایی در سبد خرید یافته نشده است')
+      }
+      payment_amount += foodPrice;
+      total_discount_amount += discount_amount;
+      foodList.push({
+        foodId: food.id,
+        name: food.name,
+        description: food.description,
+        count,
+        image: food.image,
+        price: food.price,
+        total_amount: food.price * count,
+        discount_amount,
+        payment_amount: food.price * count - discount_amount,
+        discountCode,
+        supplierId,
+        supplierName: food?.supplier?.store_name,
+        supplierImage: food?.supplier?.image,
+      });
     }
-
-    async getBasket() {
-        const { id: userId } = this.req.user as RequestUser;
-        const basketItems = await this.basketRepository.find({
-            relations: {
-                discount: true,
-                food: {
-                    supplier: true
-                },
-            },
-            where: {
-                userId
-            }
-        });
-
-        const foods = basketItems.filter((item) => item.foodId);
-        const supplierDiscount = basketItems.filter(
-            (item) => item?.discount?.supplierId
-        );
-        const generalDiscount = basketItems.find(
-            (item) => item?.discount?.id && !item.discount.supplierId
-        );
-        let total_amount = 0;
-        let payment_amount = 0;
-        let total_discount_amount = 0;
-        let foodList = [] as any[];
-        for (const item of foods) {
-            let discount_amount = 0;
-            let discountCode: string | null = null;
-            const { food, count } = item;
-            total_amount += food.price * count;
-            const supplierId = food.supplierId;
-            let foodPrice = food.price * count;
-            if (food.is_active && food.discount > 0) {
-                discount_amount += foodPrice * (food.discount / 100);
-                foodPrice = foodPrice - foodPrice * (food.discount / 100);
-            }
-            const discountItem = supplierDiscount.find(
-                ({ discount }) => discount.supplierId === supplierId
-            );
-            if (discountItem) {
-                const {
-                    discount: { active, amount, percent, limit, usage, code }
-                } = discountItem;
-                if (active) {
-                    if (!limit || (limit && limit > usage)) {
-                        discountCode = code;
-                        if (percent && percent > 0) {
-                            discount_amount += foodPrice * (percent / 100);
-                            foodPrice = foodPrice - foodPrice * (percent / 100);
-                        }
-                    }
-                }
-            }
-            payment_amount += foodPrice;
-            total_discount_amount += discount_amount;
-            foodList.push({
-                foodId: food.id,
-                name: food.name,
-                description: food.description,
-                count,
-                image: food.image,
-                price: food.price,
-                total_amount: food.price * count,
-                discount_amount,
-                payment_amount: food.price * count - discount_amount,
-                discountCode,
-                supplierId,
-                supplierName: food?.supplier?.store_name,
-                supplierImage: food?.supplier?.image
-            })
+    let generalDiscountDetail: any = {};
+    if (generalDiscount?.discount?.active) {
+      const { discount } = generalDiscount;
+      if (discount?.limit && discount.limit > discount.usage) {
+        let discount_amount = 0;
+        if (discount.percent > 0) {
+          discount_amount = payment_amount * (discount.percent / 100);
+        } else if (discount.amount > 0) {
+          discount_amount = discount.amount;
         }
-        let generalDiscountDetail: any = {};
-        if (generalDiscount?.discount?.active) {
-            const { discount } = generalDiscount;
-            if (discount?.limit && discount.limit > discount.usage) {
-                let discount_amount = 0;
-                if (discount.percent > 0) {
-                    discount_amount = payment_amount * (discount.percent / 100);
-                } else if (discount.amount > 0) {
-                    discount_amount = discount.amount;
-                }
-                payment_amount =
-                    discount_amount > payment_amount
-                        ? 0
-                        : payment_amount - discount_amount;
-                total_discount_amount += discount_amount;
-                generalDiscountDetail = {
-                    code: discount.code,
-                    percent: discount.percent,
-                    amount: discount.amount,
-                    discount_amount,
-                };
-            }
-        }
-
-        return {
-            total_amount,
-            payment_amount,
-            total_discount_amount,
-            foodList,
-            generalDiscountDetail,
+        payment_amount =
+          discount_amount > payment_amount
+            ? 0
+            : payment_amount - discount_amount;
+        total_discount_amount += discount_amount;
+        generalDiscountDetail = {
+          code: discount.code,
+          percent: discount.percent,
+          amount: discount.amount,
+          discount_amount,
         };
+      }
     }
 
-    async addDiscount(discountDto: DiscountBasketDto) {
-    const {code} = discountDto;
-    const {id: userId} = this.req.user as RequestUser;
+    return {
+      total_amount,
+      payment_amount,
+      total_discount_amount,
+      foodList,
+      generalDiscountDetail,
+    };
+  }
+
+  async addDiscount(discountDto: DiscountBasketDto) {
+    const { code } = discountDto;
+    const { id: userId } = this.req.user as RequestUser;
     const discount = await this.discountService.findOneByCode(code);
     if (!discount.active) {
       throw new BadRequestException("This discount code is not active");
@@ -258,21 +264,21 @@ export class BasketService {
     };
   }
 
-    async removeDiscount(discountDto: DiscountBasketDto) {
-        const { code } = discountDto;
-        const { id: userId } = this.req.user as RequestUser;
-        const discount = await this.discountService.findOneByCode(code);
-        const basketDiscount = await this.basketRepository.findOne({
-            where: {
-                discountId: discount.id,
-            },
-        });
-        if (!basketDiscount)
-            throw new BadRequestException("Not found discount in basket");
+  async removeDiscount(discountDto: DiscountBasketDto) {
+    const { code } = discountDto;
+    const { id: userId } = this.req.user as RequestUser;
+    const discount = await this.discountService.findOneByCode(code);
+    const basketDiscount = await this.basketRepository.findOne({
+      where: {
+        discountId: discount.id,
+      },
+    });
+    if (!basketDiscount)
+      throw new BadRequestException("Not found discount in basket");
 
-        await this.basketRepository.delete({ discountId: discount.id, userId });
-        return {
-            message: "You deleted discount code successfully",
-        };
-    }
+    await this.basketRepository.delete({ discountId: discount.id, userId });
+    return {
+      message: "You deleted discount code successfully",
+    };
+  }
 }
