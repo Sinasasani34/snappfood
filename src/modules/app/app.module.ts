@@ -10,6 +10,9 @@ import { SupplierModule } from '../supplier/supplier.module';
 import { MenuModule } from '../menu/menu.module';
 import { DiscountModule } from '../discount/discount.module';
 import { BasketModule } from '../basket/basket.module';
+import { OrderModule } from '../order/order.module';
+import { PaymentModule } from '../payment/payment.module';
+import { HttpApiModule } from '../http/http.module';
 
 @Module({
   imports: [
@@ -20,9 +23,12 @@ import { BasketModule } from '../basket/basket.module';
     SupplierModule,
     MenuModule,
     DiscountModule,
-    BasketModule
+    BasketModule,
+    OrderModule,
+    PaymentModule,
+    HttpApiModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

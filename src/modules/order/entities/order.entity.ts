@@ -10,6 +10,7 @@ import { OrderStatus } from "../enums/status.enum";
 import { UserEntity } from "src/modules/user/entity/user.entity";
 import { UserAddressEntity } from "src/modules/user/entity/address.entity";
 import { OrderItemEntity } from "./order-items.entity";
+import { PaymentEntity } from "src/modules/payment/entities/payment.entity";
 
 @Entity(EntityNames.Order)
 export class OrderEntity {
@@ -46,4 +47,7 @@ export class OrderEntity {
 
   @OneToMany(() => OrderItemEntity, item => item.order)
   items: OrderItemEntity[];
+
+  @OneToMany(() => PaymentEntity, (payment) => payment.order)
+  payments: PaymentEntity[];
 }
