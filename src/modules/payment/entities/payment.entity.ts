@@ -1,6 +1,6 @@
 import { EntityNames } from "src/common/enum/entity-name.enum";
 import { OrderEntity } from "src/modules/order/entities/order.entity";
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity(EntityNames.Payment)
 export class PaymentEntity {
@@ -29,4 +29,7 @@ export class PaymentEntity {
     onDelete: 'CASCADE'
   })
   order: OrderEntity;
+
+  @CreateDateColumn()
+  created_at: Date;
 }
